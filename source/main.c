@@ -70,6 +70,8 @@ int main(int argc, char** argv) @ 0x15
                 PWM2_level(pwmValue);
 
                 PORTD = (PORTD &0xf0) | (ledCounter &0x0f);
+       //       PORTD = (PORTD &0xf0) | (led1 &0b00000001)  | (led2 &0b00000010) | ...;
+       //       PORTD = (PORTD &0xf0) | (led1 &0x01) | (led2 &0b02) | (led3 &0b04) | (led4 &0b08);
             }
         }
         else
