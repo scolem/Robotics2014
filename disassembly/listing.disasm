@@ -1,0 +1,348 @@
+Disassembly Listing for SkeletonCode
+Generated From:
+C:/Users/Kolijn/MPLABXProjects/SkeletonCode.X/dist/default/production/SkeletonCode.X.production.cof
+Jun 6, 2014 10:19:41 AM
+
+---  C:/Users/Kolijn/MPLABXProjects/SkeletonCode.X/source/uart.c  ---------------------------------------
+1:             #include <xc.h>
+2:             #include "uart.h"
+3:             #include "hardwareConfig.h"
+4:             
+5:             void UARTSetup();
+6:             void UART_TX(char buffer[], char bufLength);
+7:             void UART_RX(char buffer[], char bufLength);
+8:             void TX_Interrupt();
+9:             void RX_Interrupt();
+10:            
+11:            #define UARTSPEED 115200
+12:            #define BUF_SIZE 128
+13:            
+14:            char TXBuffer[BUF_SIZE];
+15:            char RXBuffer[BUF_SIZE];
+16:            char tx_read    = 0;
+17:            char tx_write   = 0;
+18:            char rx_read    = 0;
+19:            char rx_write   = 0;
+20:            
+21:            void UARTSetup()
+22:            {
+23:                /*
+24:                 * TXSTA1bits.CSRC  = 0;
+25:                 * TXSTA1bits.TX9   = 0;
+26:                 * TXSTA1bits.TXEN  = 1;
+27:                 * TXSTA1bits.SYNC  = 0;
+28:                 * TXSTA1bits.SENDB = 1;
+29:                 * TXSTA1bits.BRGH  = 0;
+30:                 * TXSTA1bits.TRMT  = 0;
+31:                 * TXSTA1bits.TX9D  = 0;
+32:                 */
+33:                TXSTA1 = 0b00101000;
+01D6  0E28     MOVLW 0x28
+01D8  6EAC     MOVWF TXSTA, ACCESS
+34:                /*
+35:                 * RCSTAbits.SPEN   = 1;
+36:                 * RCSTAbits.RX9    = 0;
+37:                 * RCSTAbits.SREN   = 0;
+38:                 * RCSTAbits.CREN   = 1;
+39:                 * RCSTAbits.ADDEN  = 0;
+40:                 * RCSTAbits.FERR   = 0;
+41:                 * RCSTAbits.OERR   = 0;
+42:                 * RCSTAbits.RX9D   = 0;
+43:                 */
+44:                RCSTA = 0b10010000;
+01DA  0E90     MOVLW 0x90
+01DC  6EAB     MOVWF RCSTA, ACCESS
+45:            
+46:                BAUDCONbits.BRG16 = 1; //Set the baud rate generator to 16 bit mode.
+01DE  86B8     BSF BAUDCON, 3, ACCESS
+47:            
+48:                SPBRG = ((CLOCK_SPEED/UARTSPEED)/16)-1;
+01E0  0E19     MOVLW 0x19
+01E2  6EAF     MOVWF SPBRG, ACCESS
+49:            
+50:                //Enable the interrupts
+51:                INTCONbits.GIE  = 1;
+01E4  8EF2     BSF INTCON, 7, ACCESS
+52:                PIR1bits.TXIF   = 1;
+01E6  889E     BSF PIR1, 4, ACCESS
+53:                PIR1bits.RCIF   = 1;
+01E8  8A9E     BSF PIR1, 5, ACCESS
+54:                PIE1bits.RCIE   = 1;
+01EA  8A9D     BSF PIE1, 5, ACCESS
+55:                PIE1bits.TXIE   = 1;
+01EC  889D     BSF PIE1, 4, ACCESS
+56:            }
+01EE  0012     RETURN 0
+57:            
+58:            
+59:            /**
+60:             * Cope the data from the buffer into the transmit buffer. If the provided data
+61:             * is larger than the transmit buffer, the data will be overwritten. Don't
+62:             * transmit to much data.
+63:             * @param buffer
+64:             * @param bufLength
+65:             */
+66:            void UART_TX(char buffer[], char bufLength)
+67:            {
+68:                int i = 0;
+00A8  0E00     MOVLW 0x0
+00AA  6E16     MOVWF 0x16, ACCESS
+00AC  0E00     MOVLW 0x0
+00AE  6E15     MOVWF i, ACCESS
+69:            
+70:                for (i = 1; i<bufLength; i++)
+00B0  0E00     MOVLW 0x0
+00B2  6E16     MOVWF 0x16, ACCESS
+00B4  0E01     MOVLW 0x1
+00B6  6E15     MOVWF i, ACCESS
+00B8  D020     BRA 0xFA
+00F4  4A15     INFSNZ i, F, ACCESS
+00F6  2A16     INCF 0x16, F, ACCESS
+00F8  D000     BRA 0xFA
+00FA  5011     MOVF bufLength, W, ACCESS
+00FC  6E12     MOVWF 0x12, ACCESS
+00FE  6A13     CLRF 0x13, ACCESS
+0100  5016     MOVF 0x16, W, ACCESS
+0102  0A80     XORLW 0x80
+0104  6E14     MOVWF 0x14, ACCESS
+0106  5012     MOVF 0x12, W, ACCESS
+0108  5C15     SUBWF i, W, ACCESS
+010A  5013     MOVF 0x13, W, ACCESS
+010C  0A80     XORLW 0x80
+010E  5814     SUBWFB 0x14, W, ACCESS
+0110  A0D8     BTFSS STATUS, 0, ACCESS
+0112  D001     BRA 0x116
+0114  D001     BRA 0x118
+0116  D7D1     BRA 0xBA
+0118  D000     BRA 0x11A
+71:                {
+72:                    //Copy the data into the TX Array
+73:                    TXBuffer[tx_write] = buffer[i];
+00BA  5015     MOVF i, W, ACCESS
+00BC  240F     ADDWF buffer, W, ACCESS
+00BE  6ED9     MOVWF FSR2L, ACCESS
+00C0  5016     MOVF 0x16, W, ACCESS
+00C2  2010     ADDWFC 0x10, W, ACCESS
+00C4  6EDA     MOVWF FSR2H, ACCESS
+00C6  502E     MOVF tx_write, W, ACCESS
+00C8  0D01     MULLW 0x1
+00CA  0100     MOVLB 0x0
+00CC  0E60     MOVLW 0x60
+00CE  24F3     ADDWF PRODL, W, ACCESS
+00D0  6EE1     MOVWF FSR1L, ACCESS
+00D2  0100     MOVLB 0x0
+00D4  0E00     MOVLW 0x0
+00D6  20F4     ADDWFC PRODH, W, ACCESS
+00D8  6EE2     MOVWF FSR1H, ACCESS
+00DA  CFDF     MOVFF INDF2, INDF1
+00DC  FFE7     NOP
+74:                    tx_write++;
+00DE  2A2E     INCF tx_write, F, ACCESS
+75:            
+76:                    if (tx_write >= BUF_SIZE)
+00E0  0E7F     MOVLW 0x7F
+00E2  642E     CPFSGT tx_write, ACCESS
+00E4  D001     BRA 0xE8
+00E6  D001     BRA 0xEA
+00E8  D005     BRA 0xF4
+77:                    {
+78:                        tx_write = 0;
+00EA  6E12     MOVWF 0x12, ACCESS
+00EC  0E00     MOVLW 0x0
+00EE  6E2E     MOVWF tx_write, ACCESS
+00F0  5012     MOVF 0x12, W, ACCESS
+00F2  D000     BRA 0xF4
+79:                    }
+80:                }
+81:                TXREG = buffer[0];
+011A  C00F     MOVFF buffer, FSR2L
+011C  FFD9     NOP
+011E  C010     MOVFF 0x10, FSR2H
+0120  FFDA     NOP
+0122  50DF     MOVF INDF2, W, ACCESS
+0124  6EAD     MOVWF TXREG, ACCESS
+82:            
+83:            }
+0126  0012     RETURN 0
+84:            
+85:            /**
+86:             * Copy data from the receive buffer into the buffer. Will copy bufLength bytes,
+87:             * unless less is available
+88:             * @param buffer
+89:             * @param bufLength
+90:             */
+91:            
+92:            void UART_RX(char buffer[], char bufLength)
+93:            {
+94:                char available = (tx_read - tx_write) % BUF_SIZE;
+95:                char read = MIN(available, bufLength);
+96:                char i = 0;
+97:            
+98:                for (i = 0;i<read;i++)
+99:                {
+100:                   buffer[i] = TXBuffer[tx_read];
+101:                   tx_read++;
+102:                   if (tx_read >= BUF_SIZE)
+103:                   {
+104:                       tx_read = 0;
+105:                   }
+106:               }
+107:           }
+108:           
+109:           void TX_Interrupt()
+110:           {
+111:               //If there is still data to be transmitted
+112:               if (tx_write != tx_read)
+113:               {
+114:                   //Transmit the next character
+115:                   TXREG = TXBuffer[tx_read];
+116:                   tx_read+=1;
+117:                   if (tx_read == BUF_SIZE)
+118:                   {
+119:                       tx_read = 0;
+120:                   }
+121:               }
+122:               //Clear the flag
+123:               PIR1bits.TXIF = 0;
+124:           }
+125:           
+126:           void RX_Interrupt()
+127:           {
+128:               //Copy the received data to the receive buffer
+129:               RXBuffer[rx_write] = RCREG;
+130:           
+131:               rx_write++;
+132:               if (rx_write == BUF_SIZE)
+133:               {
+134:                   rx_write = 0;
+135:               }
+136:               //Clear the flag
+137:               PIR1bits.RCIF = 0;
+138:           }
+---  C:/Users/Kolijn/MPLABXProjects/SkeletonCode.X/source/main.c  ---------------------------------------
+1:             #include <xc.h>
+2:             #include "configBits.h"
+3:             #include "HardwareConfig.h"
+4:             #include "adc.h"
+5:             #include "gpio.h"
+6:             #include "pwm.h"
+7:             #include "timer.h"
+8:             #include "uart.h"
+9:             
+10:            /*About the @0x15
+11:             *
+12:             * For TinyBootloader to work the code needs to be generated at the beginning
+13:             * of the adress space. This is fine in MPLab and C18, which does this. However,
+14:             * MPLabX and XC8 puts the code at the bottom of the adress space, causing the
+15:             * bootloader to crash. The @0x15 forces the linker to place the function at the
+16:             * indicated position. There are some other sections after it, and some before
+17:             * it.
+18:             *
+19:             * The linker documentation says that -Ptext0=0x15 is a valid commandline
+20:             * argument to do the same, but it gives an error.
+21:             *
+22:             * If the bootloader ever complains, chech the adresses first
+23:             */
+24:            char helloMessage[] = "Hello World\0";
+25:            
+26:            int main(int argc, char** argv) @ 0x15
+27:            {
+28:                char flag =0;
+29:            
+30:                GPIOSetup();
+31:                UARTSetup();
+32:            
+33:                flag=0;
+34:            
+35:                UART_TX(helloMessage,5);
+36:            
+37:                while(1)
+38:                {
+39:            
+40:                    if (BUT0 == 0)
+41:                    {
+42:                        if (flag == 0)
+43:                        {
+44:                            //UART_TX(helloMessage,13);
+45:                            //flag=1;
+46:                            TXREG = helloMessage[0];
+47:                            while (PIR1bits.TXIF == 0);
+48:                                PIR1bits.TXIF = 1;
+49:                            TXREG = helloMessage[1];
+50:                            while (PIR1bits.TXIF == 0);
+51:                                PIR1bits.TXIF = 1;
+52:                            TXREG = helloMessage[2];
+53:                            while (PIR1bits.TXIF == 0);
+54:                                PIR1bits.TXIF = 1;
+55:                            TXREG = helloMessage[3];
+56:                            while (PIR1bits.TXIF == 0);
+57:                                PIR1bits.TXIF = 1;
+58:                        }
+59:                    }
+60:                    else
+61:                    {
+62:                        flag = 0;
+63:                    }
+64:                }
+65:            }
+66:            
+67:            void interrupt interrupthandler(void) 
+68:            {
+0128  0006     POP
+012A  CFEA     MOVFF FSR0H, 0x4
+012C  F004     NOP
+012E  CFE1     MOVFF FSR1L, 0x5
+0130  F005     NOP
+0132  CFE2     MOVFF FSR1H, 0x6
+0134  F006     NOP
+0136  CFD9     MOVFF FSR2L, 0x7
+0138  F007     NOP
+013A  CFDA     MOVFF FSR2H, 0x8
+013C  F008     NOP
+013E  CFF3     MOVFF PRODL, 0x9
+0140  F009     NOP
+0142  CFF4     MOVFF PRODH, 0xA
+0144  F00A     NOP
+0146  CFF6     MOVFF TBLPTRL, 0xB
+0148  F00B     NOP
+014A  CFF7     MOVFF TBLPTRH, 0xC
+014C  F00C     NOP
+014E  CFF8     MOVFF TBLPTRU, 0xD
+0150  F00D     NOP
+0152  CFF5     MOVFF TABLAT, 0xE
+0154  F00E     NOP
+69:                /*
+70:                if (PIR1bits.RCIF)
+71:                    RX_Interrupt();
+72:                if (PIR1bits.TXIF)
+73:                    TX_Interrupt();
+74:                */
+75:            }
+0156  C00E     MOVFF 0xE, TABLAT
+---  C:/Users/Kolijn/MPLABXProjects/SkeletonCode.X/source/gpio.c  ---------------------------------------
+1:             #include <xc.h>
+2:             #include "gpio.h"
+3:             
+4:             void GPIOSetup();
+5:             
+6:             /**
+7:              * Configure GPIOS.
+8:              * All LEDS are outputs per default
+9:              *
+10:             * Buttons are inputs.
+11:             */
+12:            void GPIOSetup()
+13:            {
+14:                //Set up LED Pins
+15:                TRISD = TRISD & 0xf0;
+01F0  5095     MOVF TRISD, W, ACCESS
+01F2  0BF0     ANDLW 0xF0
+01F4  6E95     MOVWF TRISD, ACCESS
+16:            
+17:                // Set up buttons as inputs
+18:                TRISD = TRISD | 0x30;
+01F6  5095     MOVF TRISD, W, ACCESS
+01F8  0930     IORLW 0x30
+01FA  6E95     MOVWF TRISD, ACCESS
+19:            }
+01FC  0012     RETURN 0
