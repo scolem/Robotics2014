@@ -7,6 +7,8 @@ void GPIO_Setup();
  * Configure GPIOS. All LEDS are outputs per default, buttons are inputs. All
  * the other pins are up to the user.
  */
+
+//1=input, 0=output
 void GPIO_Setup()
 {
     //Set up LED Pins, and make them low
@@ -14,5 +16,7 @@ void GPIO_Setup()
     PORTD = PORTD & 0xf0;
 
     // Set up buttons as inputs
-    TRISD = TRISD | 0x30;
+    TRISD = TRISD | 0xf0;
+
+    TRISB = 0xff;//set PORTB as inputs
 }

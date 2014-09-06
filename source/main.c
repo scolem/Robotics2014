@@ -57,19 +57,21 @@ int main(int argc, char** argv) @ 0x15
 
     while(1)
     {
+        //directly show inputs on leds
+        LED0=PORTBbits.RB0;
+        LED1=PORTBbits.RB1;
+        LED2=PORTBbits.RB2;
+        LED3=PORTBbits.RB3;
+
         // check if button0 was pressed
         if (BUT0 == 0)
         {
             if (button0_flag == 0) //Set a flag to prevent repeating
             {
                 button0_flag=1;
-
-                ledCounter+=1;
                 pwmValue+=1;
                 PWM1_level(300-pwmValue);
-                PWM2_level(pwmValue);
-
-                PORTD = (PORTD &0xf0) | (ledCounter &0x0f);
+                PWM2_level(pwmValue);  
             }
         }
         else
@@ -100,6 +102,27 @@ int main(int argc, char** argv) @ 0x15
                         rx_read = 0;
                 }
                 UART_TX_byte(NEWLINE);
+
+                UART_TX_byte(PORTB);
+                UART_TX_byte(NEWLINE);
+
+                char temp=PORTB&0x0f;//only want to work with bits 0 -> 4
+
+                //line =1, off line=0
+                //bit3=left, bit0=right
+                switch(temp)
+                {
+                    case(0x08):UART_TX("Hard right",10);break;      //1000
+                    case(0x0C):UART_TX("Right",5);break;            //1100
+                    case(0x04):UART_TX("Nudge right",11);break;     //0100
+                    case(0x06):UART_TX("Straight",8);break;         //0110
+                    case(0x02):UART_TX("Nudge left",10);break;      //0010
+                    case(0x03):UART_TX("Left",4);break;             //0011
+                    case(0x01):UART_TX("Hard left",9);break;        //0001
+                    case(0x0f):UART_TX("Intersection",12);break;    //1111
+                    case(0x00):UART_TX("Lost line",9);break;        //0000
+                    default:UART_TX("none",4);UART_TX_byte(temp);break;
+                }
 
             }
         }
