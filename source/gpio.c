@@ -18,5 +18,6 @@ void GPIO_Setup()
     // Set up buttons as inputs
     TRISD = TRISD | 0xf0;
 
-    TRISB = 0xff;//set PORTB as inputs
+    TRISB = 0xff;//set PORTB as inputs (line sensor)
+    TRISA = TRISA & 0xf0;//set RA0 to RA3 as outputs (motor contoller)
 }

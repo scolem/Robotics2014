@@ -7,6 +7,8 @@
 #include "pwm.h"
 #include "timer.h"
 #include "uart.h"
+#include "motorController.h"
+
 
 //Defined in uart.c
 extern volatile char RXBuffer[];
@@ -46,7 +48,6 @@ int main(int argc, char** argv) @ 0x15
 
     //Send a welcom message, also indicates the board is working
     UART_TX("Hello",5);
-    
 
     //Turn the psm signals on.
     PWM1_enable(1);
@@ -63,15 +64,76 @@ int main(int argc, char** argv) @ 0x15
         LED2=PORTBbits.RB2;
         LED3=PORTBbits.RB3;
 
+        //can still refine values with tests.
+        //Don't make values very low, need to still figure out lowest pwm value to get moving
+        switch(PORTB)
+        {
+            case(0x80): case(0xC0):
+                //1000 0000; 1100 0000
+                motorRforward(300);
+                motorLforward(160);
+                break;
+
+            case(0x40): case(0x60): case(0xE0):
+                //0100 0000; 0110 0000; 1110 0000
+                motorRforward(280);
+                motorLforward(180);
+                break;
+
+            case(0x20): case(0x30): case(0x70):
+                //0010 0000; 0011 0000; 0111 0000
+                motorRforward(260);
+                motorLforward(200);
+                break;
+
+            case(0x10): case(0x18): case(0x38):
+                //0001 0000; 0001 1000; 0011 1000
+                motorRforward(240);
+                motorLforward(220);
+                break;
+
+            case(0x08): case(0x0C): case(0x1C):
+                //0000 1000; 0000 1100; 0001 1100
+                motorRforward(220);
+                motorLforward(240);
+                break;
+
+            case(0x04): case(0x06): case(0x0E):
+                //0000 0100; 0000 0110; 0000 1110
+                motorRforward(200);
+                motorLforward(260);
+                break;
+
+            case(0x02): case(0x03): case(0x07):
+                //0000 0010; 0000 0011; 0000 0111
+                motorRforward(180);
+                motorLforward(280);
+                break;
+
+            case(0x01):
+                //0000 0001
+                motorRforward(160);
+                motorLforward(300);
+                break;
+
+            default:
+                //could count number of 1 and 0 bits to see which side more likely ()
+                //maybe have variable that keeps side of line for when it loses line
+                //or just turn in circle when lost line
+                motorRforward(0);
+                motorLforward(0);
+                break;
+        }
+
         // check if button0 was pressed
         if (BUT0 == 0)
         {
             if (button0_flag == 0) //Set a flag to prevent repeating
             {
                 button0_flag=1;
-                pwmValue+=1;
+                pwmValue+=10;
                 PWM1_level(300-pwmValue);
-                PWM2_level(pwmValue);  
+                PWM2_level(pwmValue);
             }
         }
         else

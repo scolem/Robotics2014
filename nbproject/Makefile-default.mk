@@ -45,17 +45,17 @@ OBJECTDIR=build/${CND_CONF}/${IMAGE_TYPE}
 DISTDIR=dist/${CND_CONF}/${IMAGE_TYPE}
 
 # Source Files Quoted if spaced
-SOURCEFILES_QUOTED_IF_SPACED=source/main.c source/adc.c source/gpio.c source/pwm.c source/timer.c source/uart.c
+SOURCEFILES_QUOTED_IF_SPACED=source/main.c source/adc.c source/gpio.c source/pwm.c source/timer.c source/uart.c source/motorController.c
 
 # Object Files Quoted if spaced
-OBJECTFILES_QUOTED_IF_SPACED=${OBJECTDIR}/source/main.p1 ${OBJECTDIR}/source/adc.p1 ${OBJECTDIR}/source/gpio.p1 ${OBJECTDIR}/source/pwm.p1 ${OBJECTDIR}/source/timer.p1 ${OBJECTDIR}/source/uart.p1
-POSSIBLE_DEPFILES=${OBJECTDIR}/source/main.p1.d ${OBJECTDIR}/source/adc.p1.d ${OBJECTDIR}/source/gpio.p1.d ${OBJECTDIR}/source/pwm.p1.d ${OBJECTDIR}/source/timer.p1.d ${OBJECTDIR}/source/uart.p1.d
+OBJECTFILES_QUOTED_IF_SPACED=${OBJECTDIR}/source/main.p1 ${OBJECTDIR}/source/adc.p1 ${OBJECTDIR}/source/gpio.p1 ${OBJECTDIR}/source/pwm.p1 ${OBJECTDIR}/source/timer.p1 ${OBJECTDIR}/source/uart.p1 ${OBJECTDIR}/source/motorController.p1
+POSSIBLE_DEPFILES=${OBJECTDIR}/source/main.p1.d ${OBJECTDIR}/source/adc.p1.d ${OBJECTDIR}/source/gpio.p1.d ${OBJECTDIR}/source/pwm.p1.d ${OBJECTDIR}/source/timer.p1.d ${OBJECTDIR}/source/uart.p1.d ${OBJECTDIR}/source/motorController.p1.d
 
 # Object Files
-OBJECTFILES=${OBJECTDIR}/source/main.p1 ${OBJECTDIR}/source/adc.p1 ${OBJECTDIR}/source/gpio.p1 ${OBJECTDIR}/source/pwm.p1 ${OBJECTDIR}/source/timer.p1 ${OBJECTDIR}/source/uart.p1
+OBJECTFILES=${OBJECTDIR}/source/main.p1 ${OBJECTDIR}/source/adc.p1 ${OBJECTDIR}/source/gpio.p1 ${OBJECTDIR}/source/pwm.p1 ${OBJECTDIR}/source/timer.p1 ${OBJECTDIR}/source/uart.p1 ${OBJECTDIR}/source/motorController.p1
 
 # Source Files
-SOURCEFILES=source/main.c source/adc.c source/gpio.c source/pwm.c source/timer.c source/uart.c
+SOURCEFILES=source/main.c source/adc.c source/gpio.c source/pwm.c source/timer.c source/uart.c source/motorController.c
 
 
 CFLAGS=
@@ -126,6 +126,14 @@ ${OBJECTDIR}/source/uart.p1: source/uart.c  nbproject/Makefile-${CND_CONF}.mk
 	@-${MV} ${OBJECTDIR}/source/uart.d ${OBJECTDIR}/source/uart.p1.d 
 	@${FIXDEPS} ${OBJECTDIR}/source/uart.p1.d $(SILENT) -rsi ${MP_CC_DIR}../  
 	
+${OBJECTDIR}/source/motorController.p1: source/motorController.c  nbproject/Makefile-${CND_CONF}.mk
+	@${MKDIR} ${OBJECTDIR}/source 
+	@${RM} ${OBJECTDIR}/source/motorController.p1.d 
+	@${RM} ${OBJECTDIR}/source/motorController.p1 
+	${MP_CC} --pass1 $(MP_EXTRA_CC_PRE) --chip=$(MP_PROCESSOR_OPTION) -Q -G  -D__DEBUG=1 --debugger=none  --double=24 --float=24 --emi=wordwrite --opt=default,-asm,-asmfile,-speed,+space,+debug --addrqual=require --mode=std -N255 -I"include" -I"source" -V --warn=0 --asmlist --summary=default,+psect,-class,+mem,-hex,-file -L --output=default,-inhx032 --runtime=default,+clear,+init,-keep,-no_startup,-download,-config,-clib,-plib --output=+mcof,-elf:multilocs --stack=compiled:auto:auto:auto "--errformat=%f:%l: error: (%n) %s" "--warnformat=%f:%l: warning: (%n) %s" "--msgformat=%f:%l: advisory: (%n) %s"    -o${OBJECTDIR}/source/motorController.p1  source/motorController.c 
+	@-${MV} ${OBJECTDIR}/source/motorController.d ${OBJECTDIR}/source/motorController.p1.d 
+	@${FIXDEPS} ${OBJECTDIR}/source/motorController.p1.d $(SILENT) -rsi ${MP_CC_DIR}../  
+	
 else
 ${OBJECTDIR}/source/main.p1: source/main.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} ${OBJECTDIR}/source 
@@ -174,6 +182,14 @@ ${OBJECTDIR}/source/uart.p1: source/uart.c  nbproject/Makefile-${CND_CONF}.mk
 	${MP_CC} --pass1 $(MP_EXTRA_CC_PRE) --chip=$(MP_PROCESSOR_OPTION) -Q -G  --double=24 --float=24 --emi=wordwrite --opt=default,-asm,-asmfile,-speed,+space,+debug --addrqual=require --mode=std -N255 -I"include" -I"source" -V --warn=0 --asmlist --summary=default,+psect,-class,+mem,-hex,-file -L --output=default,-inhx032 --runtime=default,+clear,+init,-keep,-no_startup,-download,-config,-clib,-plib --output=+mcof,-elf:multilocs --stack=compiled:auto:auto:auto "--errformat=%f:%l: error: (%n) %s" "--warnformat=%f:%l: warning: (%n) %s" "--msgformat=%f:%l: advisory: (%n) %s"    -o${OBJECTDIR}/source/uart.p1  source/uart.c 
 	@-${MV} ${OBJECTDIR}/source/uart.d ${OBJECTDIR}/source/uart.p1.d 
 	@${FIXDEPS} ${OBJECTDIR}/source/uart.p1.d $(SILENT) -rsi ${MP_CC_DIR}../  
+	
+${OBJECTDIR}/source/motorController.p1: source/motorController.c  nbproject/Makefile-${CND_CONF}.mk
+	@${MKDIR} ${OBJECTDIR}/source 
+	@${RM} ${OBJECTDIR}/source/motorController.p1.d 
+	@${RM} ${OBJECTDIR}/source/motorController.p1 
+	${MP_CC} --pass1 $(MP_EXTRA_CC_PRE) --chip=$(MP_PROCESSOR_OPTION) -Q -G  --double=24 --float=24 --emi=wordwrite --opt=default,-asm,-asmfile,-speed,+space,+debug --addrqual=require --mode=std -N255 -I"include" -I"source" -V --warn=0 --asmlist --summary=default,+psect,-class,+mem,-hex,-file -L --output=default,-inhx032 --runtime=default,+clear,+init,-keep,-no_startup,-download,-config,-clib,-plib --output=+mcof,-elf:multilocs --stack=compiled:auto:auto:auto "--errformat=%f:%l: error: (%n) %s" "--warnformat=%f:%l: warning: (%n) %s" "--msgformat=%f:%l: advisory: (%n) %s"    -o${OBJECTDIR}/source/motorController.p1  source/motorController.c 
+	@-${MV} ${OBJECTDIR}/source/motorController.d ${OBJECTDIR}/source/motorController.p1.d 
+	@${FIXDEPS} ${OBJECTDIR}/source/motorController.p1.d $(SILENT) -rsi ${MP_CC_DIR}../  
 	
 endif
 
