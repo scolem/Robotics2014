@@ -30,21 +30,30 @@ volatile int rx_read = 0;
  *
  * If the bootloader ever complains, check the adresses first
  */
+
+char countAll();
+char countLeft();
+char countRight();
+
 int main(int argc, char** argv) @ 0x15
 {
     char button0_flag = 0;
     char button1_flag = 0;
     char ledCounter = 0;
+    char flagRight=0;//Which side the line was last seen
+    char counter=0;
+    char startflag=0;
 
-    int pwmValue = 0;
+    int pwmValue = 220;
 
     //Setup the peripherals. always call this part first
+
     GPIO_Setup();
     Timer_Setup();
     UART_Setup();
     ADCSetup();
     rx_read = 0;
-    rx_write=0;
+    rx_write = 0;
 
     //Send a welcom message, also indicates the board is working
     UART_TX("Hello",5);
@@ -56,73 +65,110 @@ int main(int argc, char** argv) @ 0x15
     PWM2_enable(1);
     PWM2_TRIS = 0;
 
+    //turn all motors off
+    motorRfor=0;
+    motorRrev=0;
+    motorLfor=0;
+    motorLrev=0;
+
     while(1)
     {
         //directly show inputs on leds
-        LED0=PORTBbits.RB0;
-        LED1=PORTBbits.RB1;
-        LED2=PORTBbits.RB2;
-        LED3=PORTBbits.RB3;
+        LED0=motorRfor;
+        LED1=motorRrev;
+        LED2=motorLfor;
+        LED3=motorLrev;
 
         //can still refine values with tests.
         //Don't make values very low, need to still figure out lowest pwm value to get moving
-        switch(PORTB)
+        //Lowest PWM = 230
+        if(startflag)
         {
-            case(0x80): case(0xC0):
-                //1000 0000; 1100 0000
-                motorRforward(300);
-                motorLforward(160);
-                break;
+            char errorcorrect= PORTB&0xfb;//one light doen't work nicely
 
-            case(0x40): case(0x60): case(0xE0):
-                //0100 0000; 0110 0000; 1110 0000
-                motorRforward(280);
-                motorLforward(180);
-                break;
+//            switch(errorcorrect)
+            switch(PORTB)
+            {
+                case(0x80): case(0xC0):
+                    //1000 0000; 1100 0000
+                    motorRforward(265);
+                    motorLforward(230);
+                    flagRight=0;
+                    break;
 
-            case(0x20): case(0x30): case(0x70):
-                //0010 0000; 0011 0000; 0111 0000
-                motorRforward(260);
-                motorLforward(200);
-                break;
+                case(0x40): case(0x60): case(0xE0):
+                    //0100 0000; 0110 0000; 1110 0000
+                    motorRforward(260);
+                    motorLforward(235);
+                    flagRight=0;
+                    break;
 
-            case(0x10): case(0x18): case(0x38):
-                //0001 0000; 0001 1000; 0011 1000
-                motorRforward(240);
-                motorLforward(220);
-                break;
+                case(0x20): case(0x30): case(0x70):
+                    //0010 0000; 0011 0000; 0111 0000
+                    motorRforward(255);
+                    motorLforward(240);
+                    flagRight=0;
+                    break;
 
-            case(0x08): case(0x0C): case(0x1C):
-                //0000 1000; 0000 1100; 0001 1100
-                motorRforward(220);
-                motorLforward(240);
-                break;
+                case(0x10): case(0x18): case(0x38):
+                    //0001 0000; 0001 1000; 0011 1000
+                    motorRforward(250);
+                    motorLforward(245);
+                    flagRight=0;
+                    break;
 
-            case(0x04): case(0x06): case(0x0E):
-                //0000 0100; 0000 0110; 0000 1110
-                motorRforward(200);
-                motorLforward(260);
-                break;
+                case(0x08): case(0x0C): case(0x1C):
+                    //0000 1000; 0000 1100; 0001 1100
+                    motorRforward(245);
+                    motorLforward(250);
+                    flagRight=1;
+                    break;
 
-            case(0x02): case(0x03): case(0x07):
-                //0000 0010; 0000 0011; 0000 0111
-                motorRforward(180);
-                motorLforward(280);
-                break;
+                case(0x04): case(0x06): case(0x0E):
+                    //0000 0100; 0000 0110; 0000 1110
+                    motorRforward(240);
+                    motorLforward(255);
+                    flagRight=1;
+                    break;
 
-            case(0x01):
-                //0000 0001
-                motorRforward(160);
-                motorLforward(300);
-                break;
+                case(0x02): case(0x03): case(0x07):
+                    //0000 0010; 0000 0011; 0000 0111
+                    motorRforward(235);
+                    motorLforward(260);
+                    flagRight=1;
+                    break;
 
-            default:
-                //could count number of 1 and 0 bits to see which side more likely ()
-                //maybe have variable that keeps side of line for when it loses line
-                //or just turn in circle when lost line
-                motorRforward(0);
-                motorLforward(0);
-                break;
+                case(0x01):
+                    //0000 0001
+                    motorRforward(230);
+                    motorLforward(265);
+                    flagRight=1;
+                    break;
+
+                default:
+                    //could count number of 1 and 0 bits to see which side more likely
+                    //maybe have variable that keeps side of line for when it loses line
+                    //or just turn in circle when lost line
+
+                    if(flagRight)
+                    {
+                        motorRforward(230);
+                        motorLforward(265);
+                    }else
+                    {
+                        motorRforward(265);
+                        motorLforward(230);
+                    }
+
+                    if(countAll())
+                    {
+                        if(countRight()>countLeft())
+                            flagRight=1;
+                        else
+                            flagRight=0;
+                    }
+                    break;
+            }
         }
 
         // check if button0 was pressed
@@ -131,9 +177,55 @@ int main(int argc, char** argv) @ 0x15
             if (button0_flag == 0) //Set a flag to prevent repeating
             {
                 button0_flag=1;
-                pwmValue+=10;
-                PWM1_level(300-pwmValue);
-                PWM2_level(pwmValue);
+
+                //button0 turns line following on or off
+                if(startflag)
+                {
+                    startflag=0;
+                    motorRforward(0);
+                    motorLforward(0);
+                }
+                else
+                    startflag=1;
+
+                  //turns on motors one by one to check if working and correct ports
+//
+//                counter++;
+//
+//                if(counter==1)
+//                {
+//                    UART_TX("right forward",13);
+//                    motorRforward(300);
+//                    motorLforward(0);
+//                //    PORTA=0x01;
+//                }else if(counter==2)
+//                {
+//                    UART_TX("right reverse",13);
+//                    motorRreverse(300);
+//                    motorLreverse(0);
+//                //    LATA=0x01;
+//                }
+//                else if(counter==3)
+//                {
+//                    UART_TX("left forward",12);
+//                    motorRreverse(0);
+//                    motorLforward(300);
+//                //    PORTAbits.RA0=1;
+//                }
+//                else if(counter==4)
+//                {
+//                    UART_TX("left reverse",12);
+//                    motorRforward(0);
+//                    motorLreverse(300);
+//                 //   PORTAbits.AN0=1;
+//                }
+//                else
+//                {
+//                    motorRfor=1;
+//                    motorRrev=1;
+//                    motorLfor=1;
+//                    motorLrev=1;
+//                }
             }
         }
         else
@@ -146,10 +238,10 @@ int main(int argc, char** argv) @ 0x15
             if (button1_flag == 0)
             {
                 button1_flag =1;
-                
+
                 //Do some status transmissions
-                UART_TX("ADC value is ",13);
-                UART_TX_byte(ADC_sample(5)>>2);
+          //      UART_TX("ADC value is ",13);
+          //      UART_TX_byte(ADC_sample(5)>>2);
                 UART_TX_byte(NEWLINE);
                 UART_TX("PWM value is ",13);
                 UART_TX_byte(pwmValue);
@@ -158,13 +250,14 @@ int main(int argc, char** argv) @ 0x15
                 while(rx_read != rx_write)
                 {
                     UART_TX_byte(RXBuffer[rx_read]);
-                    
+
                     rx_read++;
                     if (rx_read >=  RX_BUF_SIZE)
                         rx_read = 0;
                 }
                 UART_TX_byte(NEWLINE);
 
+                UART_TX("value from lights",17);
                 UART_TX_byte(PORTB);
                 UART_TX_byte(NEWLINE);
 
@@ -172,7 +265,7 @@ int main(int argc, char** argv) @ 0x15
 
                 //line =1, off line=0
                 //bit3=left, bit0=right
-                switch(temp)
+     /*           switch(temp)
                 {
                     case(0x08):UART_TX("Hard right",10);break;      //1000
                     case(0x0C):UART_TX("Right",5);break;            //1100
@@ -184,7 +277,7 @@ int main(int argc, char** argv) @ 0x15
                     case(0x0f):UART_TX("Intersection",12);break;    //1111
                     case(0x00):UART_TX("Lost line",9);break;        //0000
                     default:UART_TX("none",4);UART_TX_byte(temp);break;
-                }
+                }*/
 
             }
         }
@@ -195,7 +288,7 @@ int main(int argc, char** argv) @ 0x15
 
         if (BUT0 == 0)
         {
-             UART_TX_byte(ADC_sample(5)>>2);
+         //    UART_TX_byte(ADC_sample(5)>>2);
         }
     }
 }
@@ -215,8 +308,49 @@ void interrupt isr(void)
     {
         Timer2_Interrupt();
     }
-    
+
 }
 
+char countAll()
+{
+    return countLeft()+countRight();
+}
 
+char countLeft()
+{
+    char count=0;
+
+    if(PORTBbits.RB4)
+        count++;
+
+    if(PORTBbits.RB5)
+        count++;
+
+    if(PORTBbits.RB6)
+        count++;
+
+    if(PORTBbits.RB7)
+        count++;
+
+    return count;
+}
+
+char countRight()
+{
+    char count=0;
+
+    if(PORTBbits.RB0)
+        count++;
+
+    if(PORTBbits.RB1)
+        count++;
+
+    if(PORTBbits.RB2)
+        count++;
+
+    if(PORTBbits.RB3)
+        count++;
+
+    return count;
+}
 

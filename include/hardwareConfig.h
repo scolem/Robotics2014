@@ -20,10 +20,10 @@
 #define MIN(a,b) (a < b ? a : b)
 
 //Our pin setup
-#define motorRfor PORTAbits.RA0
-#define motorRrev PORTAbits.RA1
-#define motorLfor PORTAbits.RA2
-#define motorLrev PORTAbits.RA3
+#define motorRfor PORTCbits.RC0
+#define motorRrev PORTAbits.RA4
+#define motorLfor PORTEbits.RE1
+#define motorLrev PORTEbits.RE2
 
 /*
  * To turn right motor forward:
