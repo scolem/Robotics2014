@@ -1,4 +1,4 @@
-#include <xc.h>
+    #include <xc.h>
 #include "pwm.h"
 
 void PWM1_enable(char enable);

@@ -4291,98 +4291,110 @@ Version 3.2 HI-TECH Software Intermediate Code
 ]
 [; ;motorController.c: 15: int motor2thresh=10;
 "17
-[v _motorRforward `(v ~T0 @X0 1 ef1`i ]
-"19
-{
-[; ;motorController.c: 17: void motorRforward(int value)
-[; ;motorController.c: 19: {
-[e :U _motorRforward ]
-"17
-[v _value `i ~T0 @X0 1 r1 ]
-"19
-[f ]
-[; ;motorController.c: 20: PORTCbits.RC0=1;
+[v _Lcor `i ~T0 @X0 1 e ]
+[i _Lcor
+-> 15 `i
+]
+[; ;motorController.c: 17: int Lcor = +15;
+"18
+[v _Rcor `i ~T0 @X0 1 e ]
+[i _Rcor
+-U -> 5 `i
+]
+[; ;motorController.c: 18: int Rcor = -5;
 "20
+[v _motorRforward `(v ~T0 @X0 1 ef1`i ]
+"22
+{
+[; ;motorController.c: 20: void motorRforward(int value)
+[; ;motorController.c: 22: {
+[e :U _motorRforward ]
+"20
+[v _value `i ~T0 @X0 1 r1 ]
+"22
+[f ]
+[; ;motorController.c: 23: PORTCbits.RC0=1;
+"23
 [e = . . _PORTCbits 0 0 -> -> 1 `i `uc ]
-[; ;motorController.c: 21: PORTAbits.RA4=0;
-"21
+[; ;motorController.c: 24: PORTAbits.RA4=0;
+"24
 [e = . . _PORTAbits 0 4 -> -> 0 `i `uc ]
-[; ;motorController.c: 30: PWM1_level(value);
-"30
-[e ( _PWM1_level (1 _value ]
-[; ;motorController.c: 31: }
-"31
+[; ;motorController.c: 33: PWM1_level(value+Rcor);
+"33
+[e ( _PWM1_level (1 + _value _Rcor ]
+[; ;motorController.c: 34: }
+"34
 [e :UE 557 ]
 }
-"33
-[v _motorRreverse `(v ~T0 @X0 1 ef1`i ]
-"35
-{
-[; ;motorController.c: 33: void motorRreverse(int value)
-[; ;motorController.c: 35: {
-[e :U _motorRreverse ]
-"33
-[v _value `i ~T0 @X0 1 r1 ]
-"35
-[f ]
-[; ;motorController.c: 36: PORTCbits.RC0=0;
 "36
+[v _motorRreverse `(v ~T0 @X0 1 ef1`i ]
+"38
+{
+[; ;motorController.c: 36: void motorRreverse(int value)
+[; ;motorController.c: 38: {
+[e :U _motorRreverse ]
+"36
+[v _value `i ~T0 @X0 1 r1 ]
+"38
+[f ]
+[; ;motorController.c: 39: PORTCbits.RC0=0;
+"39
 [e = . . _PORTCbits 0 0 -> -> 0 `i `uc ]
-[; ;motorController.c: 37: PORTAbits.RA4=1;
-"37
-[e = . . _PORTAbits 0 4 -> -> 1 `i `uc ]
-[; ;motorController.c: 40: PWM1_level(value);
+[; ;motorController.c: 40: PORTAbits.RA4=1;
 "40
-[e ( _PWM1_level (1 _value ]
-[; ;motorController.c: 41: }
-"41
+[e = . . _PORTAbits 0 4 -> -> 1 `i `uc ]
+[; ;motorController.c: 43: PWM1_level(value+Rcor);
+"43
+[e ( _PWM1_level (1 + _value _Rcor ]
+[; ;motorController.c: 44: }
+"44
 [e :UE 558 ]
 }
-"43
-[v _motorLforward `(v ~T0 @X0 1 ef1`i ]
-"45
-{
-[; ;motorController.c: 43: void motorLforward(int value)
-[; ;motorController.c: 45: {
-[e :U _motorLforward ]
-"43
-[v _value `i ~T0 @X0 1 r1 ]
-"45
-[f ]
-[; ;motorController.c: 46: PORTEbits.RE1=1;
 "46
+[v _motorLforward `(v ~T0 @X0 1 ef1`i ]
+"48
+{
+[; ;motorController.c: 46: void motorLforward(int value)
+[; ;motorController.c: 48: {
+[e :U _motorLforward ]
+"46
+[v _value `i ~T0 @X0 1 r1 ]
+"48
+[f ]
+[; ;motorController.c: 49: PORTEbits.RE1=1;
+"49
 [e = . . _PORTEbits 0 1 -> -> 1 `i `uc ]
-[; ;motorController.c: 47: PORTEbits.RE2=0;
-"47
-[e = . . _PORTEbits 0 2 -> -> 0 `i `uc ]
-[; ;motorController.c: 50: PWM2_level(value);
+[; ;motorController.c: 50: PORTEbits.RE2=0;
 "50
-[e ( _PWM2_level (1 _value ]
-[; ;motorController.c: 51: }
-"51
+[e = . . _PORTEbits 0 2 -> -> 0 `i `uc ]
+[; ;motorController.c: 53: PWM2_level(value + Lcor);
+"53
+[e ( _PWM2_level (1 + _value _Lcor ]
+[; ;motorController.c: 54: }
+"54
 [e :UE 559 ]
 }
-"53
-[v _motorLreverse `(v ~T0 @X0 1 ef1`i ]
-"55
-{
-[; ;motorController.c: 53: void motorLreverse(int value)
-[; ;motorController.c: 55: {
-[e :U _motorLreverse ]
-"53
-[v _value `i ~T0 @X0 1 r1 ]
-"55
-[f ]
-[; ;motorController.c: 56: PORTEbits.RE1=0;
 "56
+[v _motorLreverse `(v ~T0 @X0 1 ef1`i ]
+"58
+{
+[; ;motorController.c: 56: void motorLreverse(int value)
+[; ;motorController.c: 58: {
+[e :U _motorLreverse ]
+"56
+[v _value `i ~T0 @X0 1 r1 ]
+"58
+[f ]
+[; ;motorController.c: 59: PORTEbits.RE1=0;
+"59
 [e = . . _PORTEbits 0 1 -> -> 0 `i `uc ]
-[; ;motorController.c: 57: PORTEbits.RE2=1;
-"57
-[e = . . _PORTEbits 0 2 -> -> 1 `i `uc ]
-[; ;motorController.c: 60: PWM2_level(value);
+[; ;motorController.c: 60: PORTEbits.RE2=1;
 "60
-[e ( _PWM2_level (1 _value ]
-[; ;motorController.c: 61: }
-"61
+[e = . . _PORTEbits 0 2 -> -> 1 `i `uc ]
+[; ;motorController.c: 63: PWM2_level(value + Lcor);
+"63
+[e ( _PWM2_level (1 + _value _Lcor ]
+[; ;motorController.c: 64: }
+"64
 [e :UE 560 ]
 }

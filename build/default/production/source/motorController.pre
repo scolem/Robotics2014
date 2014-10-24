@@ -5404,14 +5404,17 @@ void PWM2_level(int level);
 int motor1thresh=10;
 int motor2thresh=10;
 
+int Lcor = +15;
+int Rcor = -5;
+
 void motorRforward(int value)
 
 {
 PORTCbits.RC0=1;
 PORTAbits.RA4=0;
 
-# 30
-PWM1_level(value);
+# 33
+PWM1_level(value+Rcor);
 }
 
 void motorRreverse(int value)
@@ -5421,7 +5424,7 @@ PORTCbits.RC0=0;
 PORTAbits.RA4=1;
 
 
-PWM1_level(value);
+PWM1_level(value+Rcor);
 }
 
 void motorLforward(int value)
@@ -5431,7 +5434,7 @@ PORTEbits.RE1=1;
 PORTEbits.RE2=0;
 
 
-PWM2_level(value);
+PWM2_level(value + Lcor);
 }
 
 void motorLreverse(int value)
@@ -5441,5 +5444,5 @@ PORTEbits.RE1=0;
 PORTEbits.RE2=1;
 
 
-PWM2_level(value);
+PWM2_level(value + Lcor);
 }

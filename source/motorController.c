@@ -14,6 +14,9 @@
 int motor1thresh=10;
 int motor2thresh=10;
 
+int Lcor = +15;
+int Rcor = -5;
+
 void motorRforward(int value)
 //value = pwm value between 0 and 100
 {
@@ -27,7 +30,7 @@ void motorRforward(int value)
 
  //   u = (short)(u*lev);
 //    PWM1_level((short)(value*(300-motor1thresh)/100+motor1thresh));
-    PWM1_level(value);
+    PWM1_level(value+Rcor);
 }
 
 void motorRreverse(int value)
@@ -37,7 +40,7 @@ void motorRreverse(int value)
     motorRrev=1;
 
   //  PWM1_level((int)value*(300.0-motor1thresh)/100.0+motor1thresh);
-    PWM1_level(value);
+    PWM1_level(value+Rcor);
 }
 
 void motorLforward(int value)
@@ -47,7 +50,7 @@ void motorLforward(int value)
     motorLrev=0;
 
  //   PWM2_level((int)value*(300-motor1thresh)/100.0+motor1thresh);
-    PWM2_level(value);
+    PWM2_level(value + Lcor);
 }
 
 void motorLreverse(int value)
@@ -57,5 +60,5 @@ void motorLreverse(int value)
     motorLrev=1;
 
  //   PWM2_level((int)value*(300-motor1thresh)/100.0+motor1thresh);
-    PWM2_level(value);
+    PWM2_level(value + Lcor);
 }

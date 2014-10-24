@@ -43,8 +43,11 @@ int main(int argc, char** argv) @ 0x15
     char flagRight=0;//Which side the line was last seen
     char counter=0;
     char startflag=0;
+    char direction = 0;
+    char flag=0;
 
-    int pwmValue = 220;
+    int pwmValue1 = 220;
+    int pwmValue2 = 220;
 
     //Setup the peripherals. always call this part first
 
@@ -74,74 +77,74 @@ int main(int argc, char** argv) @ 0x15
     while(1)
     {
         //directly show inputs on leds
-        LED0=motorRfor;
-        LED1=motorRrev;
-        LED2=motorLfor;
-        LED3=motorLrev;
-
+        LED0=PORTBbits.RB2;
+        LED1=PORTBbits.RB3;
+        LED2=PORTBbits.RB4;
+        LED3=PORTBbits.RB5;
+        
         //can still refine values with tests.
         //Don't make values very low, need to still figure out lowest pwm value to get moving
         //Lowest PWM = 230
         if(startflag)
         {
-            char errorcorrect= PORTB&0xfb;//one light doen't work nicely
+//           char errorcorrect= PORTB&0xfb;//one light doen't work nicely
 
 //            switch(errorcorrect)
             switch(PORTB)
             {
                 case(0x80): case(0xC0):
                     //1000 0000; 1100 0000
-                    motorRforward(265);
-                    motorLforward(230);
+                    motorLforward(265);
+                    motorRforward(230);
                     flagRight=0;
                     break;
 
                 case(0x40): case(0x60): case(0xE0):
                     //0100 0000; 0110 0000; 1110 0000
-                    motorRforward(260);
-                    motorLforward(235);
+                    motorLforward(260);
+                    motorRforward(235);
                     flagRight=0;
                     break;
 
                 case(0x20): case(0x30): case(0x70):
                     //0010 0000; 0011 0000; 0111 0000
-                    motorRforward(255);
-                    motorLforward(240);
+                    motorLforward(255);
+                    motorRforward(240);
                     flagRight=0;
                     break;
 
                 case(0x10): case(0x18): case(0x38):
                     //0001 0000; 0001 1000; 0011 1000
-                    motorRforward(250);
-                    motorLforward(245);
+                    motorLforward(250);
+                    motorRforward(245);
                     flagRight=0;
                     break;
 
                 case(0x08): case(0x0C): case(0x1C):
                     //0000 1000; 0000 1100; 0001 1100
-                    motorRforward(245);
-                    motorLforward(250);
+                    motorLforward(245);
+                    motorRforward(250);
                     flagRight=1;
                     break;
 
                 case(0x04): case(0x06): case(0x0E):
                     //0000 0100; 0000 0110; 0000 1110
-                    motorRforward(240);
-                    motorLforward(255);
+                    motorLforward(240);
+                    motorRforward(255);
                     flagRight=1;
                     break;
 
                 case(0x02): case(0x03): case(0x07):
                     //0000 0010; 0000 0011; 0000 0111
-                    motorRforward(235);
-                    motorLforward(260);
+                    motorLforward(235);
+                    motorRforward(260);
                     flagRight=1;
                     break;
 
                 case(0x01):
                     //0000 0001
-                    motorRforward(230);
-                    motorLforward(265);
+                    motorLforward(230);
+                    motorRforward(265);
                     flagRight=1;
                     break;
 
@@ -152,12 +155,12 @@ int main(int argc, char** argv) @ 0x15
 
                     if(flagRight)
                     {
-                        motorRforward(230);
-                        motorLforward(265);
+                        motorLforward(230);
+                        motorRforward(265);
                     }else
                     {
-                        motorRforward(265);
-                        motorLforward(230);
+                        motorLforward(265);
+                        motorRforward(230);
                     }
 
                     if(countAll())
@@ -169,6 +172,33 @@ int main(int argc, char** argv) @ 0x15
                     }
                     break;
             }
+
+            
+
+//            if(countLeft()>countRight())
+//            {
+//                motorLforward(300);
+//                motorRforward(300);
+//                flag=0;
+//            }else if (countRight()>countLeft())
+//            {
+//                motorLforward(300);
+//                motorRforward(300);
+//                flag=1;
+//            }else if(countAll()==0)
+//            {
+//                if(flag)
+//                {
+//                    motorLforward(300);
+//                    motorRforward(300);
+//                }else
+//                {
+//                    motorLforward(300);
+//                    motorRforward(300);
+//                }
+//
+//            }
+            
         }
 
         // check if button0 was pressed
@@ -177,6 +207,12 @@ int main(int argc, char** argv) @ 0x15
             if (button0_flag == 0) //Set a flag to prevent repeating
             {
                 button0_flag=1;
+                
+                //pwmValue1+=10;
+                //motorRforward(pwmValue1);
+               // motorLforward(pwmValue1+10);
+
+                //UART_TX_byte(pwmValue1);
 
                 //button0 turns line following on or off
                 if(startflag)
@@ -239,27 +275,33 @@ int main(int argc, char** argv) @ 0x15
             {
                 button1_flag =1;
 
+//                pwmValue2+=5;
+//                motorRforward(pwmValue2);
+//                motorLforward(pwmValue2);
+//
+                UART_TX_byte(PORTB);
+
                 //Do some status transmissions
           //      UART_TX("ADC value is ",13);
           //      UART_TX_byte(ADC_sample(5)>>2);
-                UART_TX_byte(NEWLINE);
-                UART_TX("PWM value is ",13);
-                UART_TX_byte(pwmValue);
-                UART_TX_byte(NEWLINE);
-                UART_TX("UART has received",17);
-                while(rx_read != rx_write)
-                {
-                    UART_TX_byte(RXBuffer[rx_read]);
-
-                    rx_read++;
-                    if (rx_read >=  RX_BUF_SIZE)
-                        rx_read = 0;
-                }
-                UART_TX_byte(NEWLINE);
-
-                UART_TX("value from lights",17);
-                UART_TX_byte(PORTB);
-                UART_TX_byte(NEWLINE);
+//                UART_TX_byte(NEWLINE);
+//                UART_TX("PWM value is ",13);
+//                UART_TX_byte(pwmValue);
+//                UART_TX_byte(NEWLINE);
+//                UART_TX("UART has received",17);
+//                while(rx_read != rx_write)
+//                {
+//                    UART_TX_byte(RXBuffer[rx_read]);
+//
+//                    rx_read++;
+//                    if (rx_read >=  RX_BUF_SIZE)
+//                        rx_read = 0;
+//                }
+//                UART_TX_byte(NEWLINE);
+//
+//                UART_TX("value from lights",17);
+//                UART_TX_byte(PORTB);
+//                UART_TX_byte(NEWLINE);
 
                 char temp=PORTB&0x0f;//only want to work with bits 0 -> 4
 
@@ -351,6 +393,6 @@ char countRight()
     if(PORTBbits.RB3)
         count++;
 
-    return count;
+    return --count;
 }
 
